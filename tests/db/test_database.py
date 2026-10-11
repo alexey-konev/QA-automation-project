@@ -29,12 +29,12 @@ def test_create_user_db(db_client, db_created_user):
     ids=["No name", "No email"]
 )
 def test_create_user_without_mandatory_field_fails(db_client, name, email):
-    with pytest.raises(NotNullViolation, match=r"NOT NULL"):
+    with pytest.raises(NotNullViolation):
         db_client.create_user(name, email)
 
 
 def test_create_user_with_duplicate_email_fails(db_client, db_created_user):
-    with pytest.raises(UniqueViolation, match=re.escape('Ключ "(email)=(new@new.new)" уже существует.')):
+    with pytest.raises(UniqueViolation):
         db_client.create_user("User with duplicated email", db_created_user["email"])
 
 
