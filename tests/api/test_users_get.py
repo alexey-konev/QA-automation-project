@@ -16,6 +16,11 @@ def test_get_users_returns_list(get_users_response):
         ("id", int),
         ("name", str),
         ("email", str)
+    ],
+    ids=[
+        "id in user",
+        "name in user",
+        "email in user"
     ]
 )
 def test_get_users_returns_valid_user_structure(field, field_type, get_users_response):

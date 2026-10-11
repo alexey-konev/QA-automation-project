@@ -11,6 +11,7 @@ class LoginPage(BasePage):
         self.username_input = self.page.get_by_placeholder("Username")
         self.password_input = self.page.get_by_placeholder("Password")
         self.login_button = self.page.locator("[data-test='login-button']")
+        self.login_error = self.page.locator("[data-test='error']")
 
     def login(self, username, password):
         self.username_input.fill(username)
