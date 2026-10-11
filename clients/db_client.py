@@ -57,37 +57,27 @@ class DatabaseClient:
         return self.cursor.fetchone()
 
     def create_user(self, name, email):
-        self.cursor.execute(
-            """
-            INSERT INTO users (name, email)
-            VALUES (%s, %s)
-            RETURNING id, name, email
-            """,
-            (name, email,)
-        )
+        try:
+            self.cursor.execute(
+                """
+                INSERT INTO users (name, email)
+                VALUES (%s, %s)
+                RETURNING id, name, email
+                """,
+                (name, email,)
+            )
 
-        self.connection.commit()
+            self.connection.commit()
 
-        return self.cursor.fetchone()
+            return self.cursor.fetchone()
+
+        except Exception:
+            self.connection.rollback()
+            raise
+
 
     def replace_user(self, user_id, name, email):
-        self.cursor.execute(
-            """
-            UPDATE users
-            SET name = %s,
-                email = %s
-            WHERE id = %s
-            RETURNING id, name, email;
-            """,
-            (name, email, user_id,)
-        )
-
-        self.connection.commit()
-
-        return self.cursor.fetchone()
-
-    def update_user(self, user_id, name=None, email=None):
-        if name is not None and email is not None:
+        try:
             self.cursor.execute(
                 """
                 UPDATE users
@@ -96,37 +86,63 @@ class DatabaseClient:
                 WHERE id = %s
                 RETURNING id, name, email;
                 """,
-                (name, email, user_id)
+                (name, email, user_id,)
             )
 
-        elif name is not None:
-            self.cursor.execute(
-                """
-                UPDATE users
-                SET name = %s
-                WHERE id = %s
-                RETURNING id, name, email;
-                """,
-                (name, user_id)
-            )
+            self.connection.commit()
 
-        elif email is not None:
-            self.cursor.execute(
-                """
-                UPDATE users
-                SET email = %s
-                WHERE id = %s
-                RETURNING id, name, email;
-                """,
-                (email, user_id)
-            )
+            return self.cursor.fetchone()
 
-        else:
-            return self.get_user_by_id(user_id)
+        except Exception:
+            self.connection.rollback()
+            raise
 
-        self.connection.commit()
+    def update_user(self, user_id, name=None, email=None):
+        try:
+            if name is not None and email is not None:
+                self.cursor.execute(
+                    """
+                    UPDATE users
+                    SET name = %s,
+                        email = %s
+                    WHERE id = %s
+                    RETURNING id, name, email;
+                    """,
+                    (name, email, user_id)
+                )
 
-        return self.cursor.fetchone()
+            elif name is not None:
+                self.cursor.execute(
+                    """
+                    UPDATE users
+                    SET name = %s
+                    WHERE id = %s
+                    RETURNING id, name, email;
+                    """,
+                    (name, user_id)
+                )
+
+            elif email is not None:
+                self.cursor.execute(
+                    """
+                    UPDATE users
+                    SET email = %s
+                    WHERE id = %s
+                    RETURNING id, name, email;
+                    """,
+                    (email, user_id)
+                )
+
+            else:
+                return self.get_user_by_id(user_id)
+
+            self.connection.commit()
+
+            return self.cursor.fetchone()
+
+        except Exception:
+            self.connection.rollback()
+            raise
 
 
     def delete_user(self, user_id):
