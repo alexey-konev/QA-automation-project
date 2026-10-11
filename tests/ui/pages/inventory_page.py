@@ -14,6 +14,7 @@ class InventoryPage(BasePage):
         self.header = Header(self.page)
         self.title = self.page.locator("[data-test='title']")
 
+    @allure.step("Find '{product_name}'")
     def get_product_card(self, product_name):
         card = self.page.locator(".inventory_item").filter(has=self.page.get_by_text(product_name))
 

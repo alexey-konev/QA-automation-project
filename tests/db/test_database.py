@@ -1,5 +1,3 @@
-import re
-
 import pytest
 from psycopg.errors import UniqueViolation, NotNullViolation
 
