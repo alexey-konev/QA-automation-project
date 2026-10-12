@@ -1,4 +1,6 @@
 import os
+
+import allure
 import psycopg
 from psycopg.rows import dict_row
 
@@ -22,6 +24,7 @@ class DatabaseClient:
 
         self.cursor = self.connection.cursor()
 
+    @allure.step("Get all users")
     def get_users(self):
         self.cursor.execute(
             """
@@ -32,6 +35,7 @@ class DatabaseClient:
 
         return self.cursor.fetchall()
 
+    @allure.step("Get user with id = {user_id}")
     def get_user_by_id(self, user_id):
         self.cursor.execute(
             """
@@ -44,6 +48,7 @@ class DatabaseClient:
 
         return self.cursor.fetchone()
 
+    @allure.step("Get user with email = '{email}'")
     def get_user_by_email(self, email):
         self.cursor.execute(
             """
@@ -56,6 +61,7 @@ class DatabaseClient:
 
         return self.cursor.fetchone()
 
+    @allure.step("Create new user: Name = '{name}', Email = '{email}'")
     def create_user(self, name, email):
         try:
             self.cursor.execute(
@@ -75,7 +81,7 @@ class DatabaseClient:
             self.connection.rollback()
             raise
 
-
+    @allure.step("Replace all fields of the user with id = {user_id}")
     def replace_user(self, user_id, name, email):
         try:
             self.cursor.execute(
@@ -100,41 +106,45 @@ class DatabaseClient:
     def update_user(self, user_id, name=None, email=None):
         try:
             if name is not None and email is not None:
-                self.cursor.execute(
-                    """
-                    UPDATE users
-                    SET name = %s,
-                        email = %s
-                    WHERE id = %s
-                    RETURNING id, name, email;
-                    """,
-                    (name, email, user_id)
-                )
+                with allure.step(f"Update name and email of the user with id = {user_id}"):
+                    self.cursor.execute(
+                        """
+                        UPDATE users
+                        SET name = %s,
+                            email = %s
+                        WHERE id = %s
+                        RETURNING id, name, email;
+                        """,
+                        (name, email, user_id)
+                    )
 
             elif name is not None:
-                self.cursor.execute(
-                    """
-                    UPDATE users
-                    SET name = %s
-                    WHERE id = %s
-                    RETURNING id, name, email;
-                    """,
-                    (name, user_id)
-                )
+                with allure.step(f"Update email of the user with id = {user_id}"):
+                    self.cursor.execute(
+                        """
+                        UPDATE users
+                        SET name = %s
+                        WHERE id = %s
+                        RETURNING id, name, email;
+                        """,
+                        (name, user_id)
+                    )
 
             elif email is not None:
-                self.cursor.execute(
-                    """
-                    UPDATE users
-                    SET email = %s
-                    WHERE id = %s
-                    RETURNING id, name, email;
-                    """,
-                    (email, user_id)
-                )
+                with allure.step(f"Update name of the user with id = {user_id}"):
+                    self.cursor.execute(
+                        """
+                        UPDATE users
+                        SET email = %s
+                        WHERE id = %s
+                        RETURNING id, name, email;
+                        """,
+                        (email, user_id)
+                    )
 
             else:
-                return self.get_user_by_id(user_id)
+                with allure.step(f"Return user with id = {user_id} because PUT body was empty"):
+                    return self.get_user_by_id(user_id)
 
             self.connection.commit()
 
@@ -145,6 +155,7 @@ class DatabaseClient:
             raise
 
 
+    @allure.step("Delete user with id = {user_id}")
     def delete_user(self, user_id):
         self.cursor.execute(
             """
@@ -159,7 +170,7 @@ class DatabaseClient:
 
         return self.cursor.fetchone()
 
-
+    @allure.step("Close the connection")
     def close(self):
         self.cursor.close()
         self.connection.close()

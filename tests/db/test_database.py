@@ -6,8 +6,7 @@ from psycopg.errors import UniqueViolation, NotNullViolation
 @allure.title("DB: Users. Get user by email")
 def test_get_user_from_db_by_email(db_client, db_created_user):
 
-    with allure.step("Find user in the database"):
-        user = db_client.get_user_by_email(db_created_user["email"])
+    user = db_client.get_user_by_email(db_created_user["email"])
 
     with allure.step("Verify user info is correct"):
         assert user == db_created_user
@@ -34,14 +33,14 @@ def test_create_user_db(db_client, db_created_user):
     ids=["No name", "No email"]
 )
 @allure.title("DB: Users. Create user without '{missing_field}' fails")
-def test_create_user_without_mandatory_field_fails(db_client, name, email, missing_field):
+def test_create_user_without_mandatory_field_returns_exception(db_client, name, email, missing_field):
     with allure.step(f"Verify exception when creating user without '{missing_field}'"):
         with pytest.raises(NotNullViolation):
             db_client.create_user(name, email)
 
 
 @allure.title("DB: Users. Create user with duplicate email fails")
-def test_create_user_with_duplicate_email_fails(db_client, db_created_user):
+def test_create_user_with_duplicate_email_returns_exception(db_client, db_created_user):
     with allure.step("Verify exception when creating user with duplicate email"):
         with pytest.raises(UniqueViolation):
             db_client.create_user("User with duplicated email", db_created_user["email"])
@@ -49,8 +48,7 @@ def test_create_user_with_duplicate_email_fails(db_client, db_created_user):
 
 @allure.title("DB: Users. Delete user")
 def test_delete_user_db(db_client, db_created_user):
-    with allure.step("Delete user from the database"):
-        deleted_user = db_client.delete_user(db_created_user["id"])
+    deleted_user = db_client.delete_user(db_created_user["id"])
 
     with allure.step("Verify that the right user was deleted"):
         assert db_created_user == deleted_user
